@@ -1,0 +1,156 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="using:ImageSortr.App.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="1000"
+        d:DesignHeight="640"
+        x:Class="ImageSortr.App.Views.MainWindow"
+        x:DataType="viewModels:MainWindowViewModel"
+        Width="1000"
+        Height="580"
+        MinWidth="1000"
+        MinHeight="580"
+        Background="#F5F7FA"
+        CanResize="False"
+        Title="Image Sortr by tsjdev apps"
+        Icon="/Assets/AppIcon.ico">
+
+    <Grid ColumnDefinitions="1.4*,1*"
+          ColumnSpacing="24"
+          Margin="12">
+        <Border Classes="card">
+            <StackPanel Spacing="18">
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="heading-large" Text="Image Sortr" />
+                    <TextBlock Classes="body-text"
+                               Text="Sort images into date-based folders using EXIF capture dates."
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Foreground="#1E293B" Text="Source folder" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                        <TextBox Grid.Column="0"
+                                 IsEnabled="{Binding CanEditInputs}"
+                                 IsReadOnly="True"
+                                 PlaceholderText="Select the folder that contains the images to sort"
+                                 Text="{Binding SourceFolder}" />
+                        <Button Grid.Column="1"
+                                Classes="Primary"
+                                Command="{Binding BrowseSourceFolderCommand}"
+                                IsEnabled="{Binding CanEditInputs}"
+                                MinWidth="50"
+                                Theme="{StaticResource SolidButton}"
+                                ToolTip.Tip="Browse source folder">
+                            <PathIcon Width="18" Height="18" Data="M3 6H9L11 8H21V19H3Z" />
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Foreground="#1E293B" Text="Target folder" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                        <TextBox Grid.Column="0"
+                                 IsEnabled="{Binding CanEditInputs}"
+                                 IsReadOnly="True"
+                                 PlaceholderText="Select where date folders should be created"
+                                 Text="{Binding TargetFolder}" />
+                        <Button Grid.Column="1"
+                                Classes="Primary"
+                                Command="{Binding BrowseTargetFolderCommand}"
+                                IsEnabled="{Binding CanEditInputs}"
+                                MinWidth="50"
+                                Theme="{StaticResource SolidButton}"
+                                ToolTip.Tip="Browse target folder">
+                            <PathIcon Width="18" Height="18" Data="M3 6H9L11 8H21V19H3Z" />
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Foreground="#1E293B" Text="Optional folder name" />
+                    <TextBox IsReadOnly="{Binding IsRunning}"
+                             PlaceholderText="Example: Hamburg, Holiday, Cruise, ..."
+                             Text="{Binding OptionalFolderName}" />
+                </StackPanel>
+
+                <Border Classes="panel">
+                    <StackPanel Spacing="12">
+                        <CheckBox Content="Include year in date folder name"
+                                  IsChecked="{Binding IncludeYearInFolderName}"
+                                  IsEnabled="{Binding CanEditInputs}" />
+                        <TextBlock Classes="body-text"
+                                   Text="{Binding FolderNameHint}"
+                                   TextWrapping="Wrap" />
+                        <CheckBox Content="Overwrite existing files in the target folder"
+                                  IsChecked="{Binding IsOverwriteExisting}"
+                                  IsEnabled="{Binding CanEditInputs}" />
+                        <TextBlock Classes="body-text"
+                                   Text="Leave this unchecked to skip conflicts and keep any files that already exist in the destination folder."
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="validation" IsVisible="{Binding HasValidationMessage}">
+                    <TextBlock Foreground="#B91C1C" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                </Border>
+
+                <Button Classes="Primary"
+                        Command="{Binding StartSortingCommand}"
+                        Content="{Binding StartButtonText}"
+                        HorizontalAlignment="Stretch"
+                        Theme="{StaticResource SolidButton}" />
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="*,Auto" RowSpacing="24">
+            <Border Grid.Row="0" Classes="card">
+                <StackPanel Spacing="18">
+                    <TextBlock Classes="heading-medium" Text="Live progress" />
+                    <Border Classes="info">
+                        <StackPanel Spacing="12">
+                            <TextBlock Classes="accent"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding ProgressSummary}" />
+                            <ProgressBar Height="12"
+                                         Foreground="{StaticResource AccentBrush}"
+                                         Maximum="{Binding ProgressMaximum}"
+                                         Value="{Binding ProgressValue}" />
+                            <TextBlock Classes="accent" Text="{Binding ProgressPercentageText}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Classes="panel">
+                        <StackPanel Spacing="8">
+                            <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="Latest activity" />
+                            <TextBlock Classes="body-text"
+                                       MaxLines="2"
+                                       MinHeight="40"
+                                       Text="{Binding CurrentFile}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Classes="heading-medium" Text="Supported formats" />
+                    <WrapPanel>
+                        <Border Classes="tag"><TextBlock Text=".jpg" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".jpeg" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".png" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".gif" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".bmp" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".tif" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".tiff" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".webp" /></Border>
+                        <Border Classes="tag"><TextBlock Text=".avif" /></Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

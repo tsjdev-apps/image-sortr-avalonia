@@ -1,0 +1,29 @@
+name: Build Project for Pull Request
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore dependencies
+        run: dotnet restore ImageSortr.slnx
+
+      - name: Build
+        run: dotnet build ImageSortr.slnx --no-restore
+
+      - name: Test
+        run: dotnet test ImageSortr.slnx --no-build --verbosity normal
