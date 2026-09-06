@@ -6,5 +6,5 @@ namespace ImageSortr.Core.Models;
 public sealed record SortProgress(
     int Current,
     int Total,
-    string? CurrentFile,
-    string Message);
+    string Message,
+    SortedFileResult? FileResult = null);

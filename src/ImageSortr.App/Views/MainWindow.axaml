@@ -1,41 +1,50 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:localization="using:ImageSortr.App.Resources.Localization"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="using:ImageSortr.App.Models"
         xmlns:viewModels="using:ImageSortr.App.ViewModels"
         mc:Ignorable="d"
-        d:DesignWidth="1000"
-        d:DesignHeight="640"
+        d:DesignWidth="1120"
+        d:DesignHeight="680"
         x:Class="ImageSortr.App.Views.MainWindow"
         x:DataType="viewModels:MainWindowViewModel"
-        Width="1000"
-        Height="580"
-        MinWidth="1000"
-        MinHeight="580"
-        Background="#F5F7FA"
-        CanResize="False"
-        Title="Image Sortr by tsjdev apps"
+        Width="1120"
+        Height="600"
+        MinWidth="1120"
+        MinHeight="600"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        CanResize="True"
+        Title="{x:Static localization:Strings.Main_WindowTitle}"
         Icon="/Assets/AppIcon.ico">
 
     <Grid ColumnDefinitions="1.4*,1*"
           ColumnSpacing="24"
           Margin="12">
         <Border Classes="card">
-            <StackPanel Spacing="18">
+            <Grid RowDefinitions="*,Auto" RowSpacing="12">
+                <ScrollViewer Grid.Row="0"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,4,0" Spacing="18">
                 <StackPanel Spacing="4">
-                    <TextBlock Classes="heading-large" Text="Image Sortr" />
+                    <TextBlock Classes="heading-large"
+                               Text="{x:Static localization:Strings.Main_Title}" />
                     <TextBlock Classes="body-text"
-                               Text="Sort images into date-based folders using EXIF capture dates."
+                               Text="{x:Static localization:Strings.Main_Description}"
                                TextWrapping="Wrap" />
                 </StackPanel>
 
                 <StackPanel Spacing="8">
-                    <TextBlock FontWeight="SemiBold" Foreground="#1E293B" Text="Source folder" />
+                    <TextBlock Classes="primary-text"
+                               FontWeight="SemiBold"
+                               Text="{x:Static localization:Strings.SourceFolder_Label}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
                         <TextBox Grid.Column="0"
                                  IsEnabled="{Binding CanEditInputs}"
                                  IsReadOnly="True"
-                                 PlaceholderText="Select the folder that contains the images to sort"
+                                 PlaceholderText="{x:Static localization:Strings.SourceFolder_Watermark}"
                                  Text="{Binding SourceFolder}" />
                         <Button Grid.Column="1"
                                 Classes="Primary"
@@ -43,19 +52,21 @@
                                 IsEnabled="{Binding CanEditInputs}"
                                 MinWidth="50"
                                 Theme="{StaticResource SolidButton}"
-                                ToolTip.Tip="Browse source folder">
+                                ToolTip.Tip="{x:Static localization:Strings.SourceFolder_BrowseTooltip}">
                             <PathIcon Width="18" Height="18" Data="M3 6H9L11 8H21V19H3Z" />
                         </Button>
                     </Grid>
                 </StackPanel>
 
                 <StackPanel Spacing="8">
-                    <TextBlock FontWeight="SemiBold" Foreground="#1E293B" Text="Target folder" />
+                    <TextBlock Classes="primary-text"
+                               FontWeight="SemiBold"
+                               Text="{x:Static localization:Strings.TargetFolder_Label}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
                         <TextBox Grid.Column="0"
                                  IsEnabled="{Binding CanEditInputs}"
                                  IsReadOnly="True"
-                                 PlaceholderText="Select where date folders should be created"
+                                 PlaceholderText="{x:Static localization:Strings.TargetFolder_Watermark}"
                                  Text="{Binding TargetFolder}" />
                         <Button Grid.Column="1"
                                 Classes="Primary"
@@ -63,94 +74,166 @@
                                 IsEnabled="{Binding CanEditInputs}"
                                 MinWidth="50"
                                 Theme="{StaticResource SolidButton}"
-                                ToolTip.Tip="Browse target folder">
+                                ToolTip.Tip="{x:Static localization:Strings.TargetFolder_BrowseTooltip}">
                             <PathIcon Width="18" Height="18" Data="M3 6H9L11 8H21V19H3Z" />
                         </Button>
                     </Grid>
                 </StackPanel>
 
                 <StackPanel Spacing="8">
-                    <TextBlock FontWeight="SemiBold" Foreground="#1E293B" Text="Optional folder name" />
+                    <TextBlock Classes="primary-text"
+                               FontWeight="SemiBold"
+                               Text="{x:Static localization:Strings.OptionalFolderName_Label}" />
                     <TextBox IsReadOnly="{Binding IsRunning}"
-                             PlaceholderText="Example: Hamburg, Holiday, Cruise, ..."
+                             PlaceholderText="{x:Static localization:Strings.OptionalFolderName_Watermark}"
                              Text="{Binding OptionalFolderName}" />
                 </StackPanel>
 
                 <Border Classes="panel">
                     <StackPanel Spacing="12">
-                        <CheckBox Content="Include year in date folder name"
-                                  IsChecked="{Binding IncludeYearInFolderName}"
-                                  IsEnabled="{Binding CanEditInputs}" />
+                        <CheckBox IsChecked="{Binding IncludeYearInFolderName}"
+                                  IsEnabled="{Binding CanEditInputs}">
+                            <TextBlock Text="{x:Static localization:Strings.IncludeYear_Label}"
+                                       TextWrapping="Wrap" />
+                        </CheckBox>
                         <TextBlock Classes="body-text"
                                    Text="{Binding FolderNameHint}"
                                    TextWrapping="Wrap" />
-                        <CheckBox Content="Overwrite existing files in the target folder"
-                                  IsChecked="{Binding IsOverwriteExisting}"
-                                  IsEnabled="{Binding CanEditInputs}" />
+                        <CheckBox IsChecked="{Binding IsOverwriteExisting}"
+                                  IsEnabled="{Binding CanEditInputs}">
+                            <TextBlock Text="{x:Static localization:Strings.OverwriteFiles_Label}"
+                                       TextWrapping="Wrap" />
+                        </CheckBox>
                         <TextBlock Classes="body-text"
-                                   Text="Leave this unchecked to skip conflicts and keep any files that already exist in the destination folder."
+                                   Text="{x:Static localization:Strings.OverwriteFiles_Description}"
                                    TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
-                <Border Classes="validation" IsVisible="{Binding HasValidationMessage}">
-                    <TextBlock Foreground="#B91C1C" Text="{Binding ValidationMessage}" TextWrapping="Wrap" />
+                <Border Classes="validation"
+                        IsVisible="{Binding HasValidationMessage}">
+                    <TextBlock Foreground="{DynamicResource ValidationTextBrush}"
+                               Text="{Binding ValidationMessage}"
+                               TextWrapping="Wrap" />
                 </Border>
+                    </StackPanel>
+                </ScrollViewer>
 
-                <Button Classes="Primary"
+                <Button Grid.Row="1"
+                        Classes="Primary"
                         Command="{Binding StartSortingCommand}"
                         Content="{Binding StartButtonText}"
                         HorizontalAlignment="Stretch"
+                        Margin="0,4,0,0"
                         Theme="{StaticResource SolidButton}" />
-            </StackPanel>
+            </Grid>
         </Border>
 
-        <Grid Grid.Column="1" RowDefinitions="*,Auto" RowSpacing="24">
-            <Border Grid.Row="0" Classes="card">
-                <StackPanel Spacing="18">
-                    <TextBlock Classes="heading-medium" Text="Live progress" />
-                    <Border Classes="info">
-                        <StackPanel Spacing="12">
-                            <TextBlock Classes="accent"
-                                       FontWeight="SemiBold"
-                                       Text="{Binding ProgressSummary}" />
-                            <ProgressBar Height="12"
-                                         Foreground="{StaticResource AccentBrush}"
-                                         Maximum="{Binding ProgressMaximum}"
-                                         Value="{Binding ProgressValue}" />
-                            <TextBlock Classes="accent" Text="{Binding ProgressPercentageText}" />
-                        </StackPanel>
-                    </Border>
-                    <Border Classes="panel">
-                        <StackPanel Spacing="8">
-                            <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="Latest activity" />
-                            <TextBlock Classes="body-text"
-                                       MaxLines="2"
-                                       MinHeight="40"
-                                       Text="{Binding CurrentFile}"
-                                       TextTrimming="CharacterEllipsis"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
+        <Border Grid.Column="1" Classes="card">
+            <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+                <TextBlock Classes="heading-medium"
+                           Text="{x:Static localization:Strings.Progress_Title}" />
 
-            <Border Grid.Row="1" Classes="card">
-                <StackPanel Spacing="12">
-                    <TextBlock Classes="heading-medium" Text="Supported formats" />
-                    <WrapPanel>
-                        <Border Classes="tag"><TextBlock Text=".jpg" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".jpeg" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".png" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".gif" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".bmp" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".tif" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".tiff" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".webp" /></Border>
-                        <Border Classes="tag"><TextBlock Text=".avif" /></Border>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
+                <Border Grid.Row="1" Classes="info">
+                    <Grid RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="12"
+                          RowSpacing="10">
+                        <TextBlock Classes="accent"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding ProgressSummary}" />
+                        <TextBlock Grid.Column="1"
+                                   Classes="accent"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding ProgressPercentageText}" />
+                        <ProgressBar Grid.Row="1"
+                                     Grid.ColumnSpan="2"
+                                     Height="10"
+                                     Foreground="{StaticResource AccentBrush}"
+                                     Maximum="{Binding ProgressBarMaximum}"
+                                     Value="{Binding ProcessedFileCount}" />
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="8">
+                    <TextBlock Classes="primary-text"
+                               FontWeight="SemiBold"
+                               Text="{x:Static localization:Strings.ProcessingHistory_Title}" />
+
+                    <TextBlock Grid.Row="1"
+                               Classes="body-text"
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding HasNoProcessingHistory}"
+                               Text="{x:Static localization:Strings.Progress_NoFiles}"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+
+                    <ListBox x:Name="ProcessingHistoryList"
+                             Grid.Row="1"
+                             Classes="processing-history"
+                             IsVisible="{Binding HasProcessingHistory}"
+                             ItemsSource="{Binding ProcessingHistory}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProcessingEntry">
+                                <Border BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="4,9">
+                                    <Grid ColumnDefinitions="24,*"
+                                          RowDefinitions="Auto,Auto,Auto"
+                                          RowSpacing="3">
+                                        <TextBlock Grid.RowSpan="3"
+                                                   Classes="accent"
+                                                   FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Text="{Binding StatusIcon}" />
+                                        <TextBlock Grid.Column="1"
+                                                   Classes="primary-text"
+                                                   FontWeight="SemiBold"
+                                                   Text="{Binding FileName}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <Grid Grid.Row="1"
+                                              Grid.Column="1"
+                                              ColumnDefinitions="Auto,*"
+                                              ColumnSpacing="8">
+                                            <TextBlock Classes="body-text"
+                                                       FontSize="12"
+                                                       Text="{Binding StatusText}" />
+                                            <TextBlock Grid.Column="1"
+                                                       Classes="body-text"
+                                                       FontSize="12"
+                                                       IsVisible="{Binding HasDetails}"
+                                                       Text="{Binding Details}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                        <Grid Grid.Row="2"
+                                              Grid.Column="1"
+                                              ColumnDefinitions="Auto,*"
+                                              ColumnSpacing="5"
+                                              IsVisible="{Binding HasDestination}">
+                                            <TextBlock Classes="body-text"
+                                                       FontSize="12"
+                                                       Text="→" />
+                                            <TextBlock Grid.Column="1"
+                                                       Classes="body-text"
+                                                       FontSize="12"
+                                                       Text="{Binding Destination}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

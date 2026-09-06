@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Main_WindowTitle" xml:space="preserve"><value>Image Sortr by tsjdev apps</value></data>
+  <data name="Main_Title" xml:space="preserve"><value>Image Sortr</value></data>
+  <data name="Main_Description" xml:space="preserve"><value>Sort images into date-based folders using EXIF capture dates.</value></data>
+  <data name="Theme_Locale" xml:space="preserve"><value>en-US</value></data>
+  <data name="SourceFolder_Label" xml:space="preserve"><value>Source folder</value></data>
+  <data name="SourceFolder_Watermark" xml:space="preserve"><value>Select the folder that contains the images to sort</value></data>
+  <data name="SourceFolder_BrowseTooltip" xml:space="preserve"><value>Browse source folder</value></data>
+  <data name="SourceFolder_PickerTitle" xml:space="preserve"><value>Choose the source folder</value></data>
+  <data name="TargetFolder_Label" xml:space="preserve"><value>Target folder</value></data>
+  <data name="TargetFolder_Watermark" xml:space="preserve"><value>Select where date folders should be created</value></data>
+  <data name="TargetFolder_BrowseTooltip" xml:space="preserve"><value>Browse target folder</value></data>
+  <data name="TargetFolder_PickerTitle" xml:space="preserve"><value>Choose the target folder</value></data>
+  <data name="OptionalFolderName_Label" xml:space="preserve"><value>Optional folder name</value></data>
+  <data name="OptionalFolderName_Watermark" xml:space="preserve"><value>Example: Hamburg, Holiday, Cruise, ...</value></data>
+  <data name="IncludeYear_Label" xml:space="preserve"><value>Include year in date folder name</value></data>
+  <data name="IncludeYear_DescriptionWithYear" xml:space="preserve"><value>New folders use YYYY-MM-DD/Your Name. Matching existing date folders are always reused.</value></data>
+  <data name="IncludeYear_DescriptionWithoutYear" xml:space="preserve"><value>New folders use MM-DD/Your Name. Matching existing date folders are always reused.</value></data>
+  <data name="OverwriteFiles_Label" xml:space="preserve"><value>Overwrite existing files in the target folder</value></data>
+  <data name="OverwriteFiles_Description" xml:space="preserve"><value>Leave this unchecked to skip conflicts and keep files that already exist in the destination folder.</value></data>
+  <data name="SortImages_Button" xml:space="preserve"><value>Sort images</value></data>
+  <data name="SortingImages_Button" xml:space="preserve"><value>Sorting images...</value></data>
+  <data name="Progress_Title" xml:space="preserve"><value>Live progress</value></data>
+  <data name="Progress_ProcessedFile" xml:space="preserve"><value>{0} / {1} file processed</value></data>
+  <data name="Progress_ProcessedFiles" xml:space="preserve"><value>{0} / {1} files processed</value></data>
+  <data name="Progress_NoFiles" xml:space="preserve"><value>No files have been processed yet.</value></data>
+  <data name="ProcessingHistory_Title" xml:space="preserve"><value>Processing history</value></data>
+  <data name="ProcessingStatus_Sorted" xml:space="preserve"><value>Sorted</value></data>
+  <data name="ProcessingStatus_Skipped" xml:space="preserve"><value>Skipped</value></data>
+  <data name="ProcessingStatus_Overwritten" xml:space="preserve"><value>Overwritten</value></data>
+  <data name="ProcessingStatus_Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="ProcessingStatus_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="ProcessingSummary_Title" xml:space="preserve"><value>Summary</value></data>
+  <data name="ProcessingSummary_Counts" xml:space="preserve"><value>{0} sorted · {1} overwritten · {2} skipped · {3} failed</value></data>
+  <data name="ProcessingDetail_FileExists" xml:space="preserve"><value>File already exists</value></data>
+  <data name="ProcessingDetail_CouldNotProcess" xml:space="preserve"><value>The file could not be processed</value></data>
+  <data name="Validation_InvalidFolders" xml:space="preserve"><value>Please review the selected folders and try again.</value></data>
+  <data name="Validation_SourceNotFound" xml:space="preserve"><value>The source folder could not be found.</value></data>
+  <data name="Validation_TargetUnavailable" xml:space="preserve"><value>The target folder could not be created or accessed.</value></data>
+  <data name="Validation_AccessDenied" xml:space="preserve"><value>The app does not have permission to access one of the selected folders.</value></data>
+</root>

@@ -1,6 +1,6 @@
 # Image Sortr
 
-Image Sortr is a cross-platform desktop app for sorting entire folders of images into date-based folders without turning the task into a script. Built with Avalonia on .NET, it focuses on a practical batch workflow: choose a source folder, pick a target folder, optionally enter a folder name, choose whether to include the year, decide how conflicts should be handled, and copy organized images with live progress feedback.
+Image Sortr is a cross-platform desktop app for sorting entire folders of images into date-based folders without turning the task into a script. Built with Avalonia on .NET, it focuses on a practical batch workflow: choose a source folder, pick a target folder, optionally enter a folder name, choose whether to include the year, decide how conflicts should be handled, and copy organized images with a live per-file processing history.
 
 ![Illustrated header for Image Sortr](docs/header.jpg)
 
@@ -17,7 +17,11 @@ The project is aimed at everyday image-organization jobs such as sorting travel 
 - Reuse existing folders starting with `YYYY-MM-DD` or `MM-DD`
 - Send images without a usable date to `Unknown Date`
 - Skip or overwrite existing files
-- Track progress through live status updates and completion summaries
+- Track every processed file with sorted, overwritten, skipped, or failed status details
+- Keep the latest history entry visible automatically and clear the history before each new batch
+- Write a localized result summary to the processing history when a batch completes
+- Use English or German automatically based on the operating system UI language
+- Follow the operating system light or dark appearance
 - Support `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tif`, `.tiff`, `.webp`, and `.avif`
 
 > Note: the current sorting workflow processes files from the selected input folder only. It does not recurse into nested subfolders.
@@ -34,13 +38,23 @@ The main screen keeps the workflow simple: select a source folder, choose a targ
 
 ![Image Sortr live progress while sorting images](docs/screenshot-02.png)
 
-While the batch is running, Image Sortr shows the overall progress, percentage, and latest file activity so you can see what the app is doing at a glance.
+While the batch is running, Image Sortr shows the overall file count and percentage alongside a scrollable processing history. Each completed file appears immediately with a status icon and label, plus its destination folder or a short explanation where applicable. The history automatically keeps the newest entry visible.
 
 ### Completion summary
 
 ![Image Sortr completion summary after sorting images](docs/screenshot-03.png)
 
-After the batch finishes, the latest activity panel shows the final copied, skipped, failed, and folder counts without forcing you into a separate report view.
+After the batch finishes, Image Sortr appends a compact summary to the processing history with sorted, overwritten, skipped, and failed counts. Starting another batch clears the previous history, summary, and progress values before new results are added.
+
+## Localization and Appearance
+
+Image Sortr includes English and German user interfaces. It selects the language from the operating system UI culture using standard .NET resource fallback:
+
+- German cultures such as `de-DE`, `de-AT`, and `de-CH` use German.
+- English cultures use English.
+- Unsupported languages fall back to English.
+
+The window follows the operating system light or dark theme. Both variants use the same Semi.Avalonia design language and application accent color.
 
 ## Sort Workflow
 
@@ -48,7 +62,7 @@ After the batch finishes, the latest activity panel shows the final copied, skip
 2. Choose where the sorted copies should be written.
 3. Optionally enter a name such as `Hamburg` or `Cruise` for a subfolder inside each date folder.
 4. Decide whether new date folders should include the year and whether existing files should be overwritten.
-5. Start the batch and follow the live progress panel.
+5. Start the batch and follow the overall progress and per-file processing history.
 
 Image Sortr reads files in deterministic, case-insensitive filename order. It copies files; the source folder is never renamed, moved, or otherwise modified.
 
@@ -155,9 +169,11 @@ dotnet test ImageSortr.slnx --configuration Release
 
 There is no separate lint command. Repository analyzers and code-style checks run as part of the build.
 
+The test projects use xUnit with Microsoft.Testing.Platform. The required runner is selected centrally in `global.json`, so the standard `dotnet test` command above is sufficient.
+
 ## Project Structure
 
-- `src/ImageSortr.App`: Avalonia desktop UI shell, theme, folder picker, and view model
+- `src/ImageSortr.App`: Avalonia desktop UI shell, localized resources, light/dark theme, folder picker, processing-history models, and view model
 - `src/ImageSortr.Core`: sorting pipeline, metadata dates, folder resolution, file handling, and result models
 - `tests/ImageSortr.Tests`: xUnit tests for the sorting service, folder resolution, date fallback, and window view model
 
@@ -174,7 +190,7 @@ The solution intentionally keeps the UI thin. Avalonia-specific code lives in th
 
 ## Quality
 
-The repository includes automated coverage for both the batch sorting service and the window view model. Tests verify EXIF priority and timestamp fallback behavior, deterministic folder matching, sanitization, non-recursive discovery, conflict handling, `Unknown Date` handling, progress reporting, and completion-state behavior.
+The repository includes automated coverage for both the batch sorting service and the window view model. Tests verify EXIF priority and timestamp fallback behavior, deterministic folder matching, sanitization, non-recursive discovery, conflict handling, `Unknown Date` handling, per-file progress reporting, history reset behavior, completion summaries, status representation, English and German resources, pluralized progress text, and English fallback for unsupported cultures.
 
 ## License
 

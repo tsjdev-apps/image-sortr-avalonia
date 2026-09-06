@@ -1,3 +1,5 @@
+using ImageSortr.App.Models;
+using ImageSortr.App.Resources.Localization;
 using ImageSortr.App.ViewModels;
 using ImageSortr.Core.Models;
 using ImageSortr.Core.Services;
@@ -60,11 +62,11 @@ public sealed class MainWindowViewModelTests
         MainWindowViewModel viewModel = new(new StubImageSortService());
 
         Assert.False(viewModel.IncludeYearInFolderName);
-        Assert.StartsWith("New folders use MM-DD", viewModel.FolderNameHint, StringComparison.Ordinal);
+        Assert.Equal(Strings.IncludeYear_DescriptionWithoutYear, viewModel.FolderNameHint);
 
         viewModel.IncludeYearInFolderName = true;
 
-        Assert.StartsWith("New folders use YYYY-MM-DD", viewModel.FolderNameHint, StringComparison.Ordinal);
+        Assert.Equal(Strings.IncludeYear_DescriptionWithYear, viewModel.FolderNameHint);
     }
 
     [Fact]
@@ -74,8 +76,21 @@ public sealed class MainWindowViewModelTests
         {
             Handler = (options, progress, _) =>
             {
-                progress?.Report(new SortProgress(1, 2, "first.jpg", "Copied 'first.jpg'."));
-                progress?.Report(new SortProgress(2, 2, "second.jpg", "Skipped 'second.jpg'."));
+                SortedFileResult first = new(
+                    "first.jpg",
+                    Path.Combine("target", "2026-09-05", "first.jpg"),
+                    new DateTime(2026, 9, 5),
+                    SortFileStatus.Copied,
+                    "Copied 'first.jpg'.");
+                SortedFileResult second = new(
+                    "second.jpg",
+                    Path.Combine("target", "2026-09-05", "second.jpg"),
+                    new DateTime(2026, 9, 5),
+                    SortFileStatus.Skipped,
+                    "Skipped 'second.jpg'.");
+
+                progress?.Report(new SortProgress(1, 2, first.Message, first));
+                progress?.Report(new SortProgress(2, 2, second.Message, second));
 
                 return Task.FromResult(new SortResult(
                     2,
@@ -84,7 +99,7 @@ public sealed class MainWindowViewModelTests
                     0,
                     1,
                     1,
-                    []));
+                    [first, second]));
             }
         };
         MainWindowViewModel viewModel = new(service)
@@ -106,11 +121,19 @@ public sealed class MainWindowViewModelTests
         Assert.True(service.LastOptions.IncludeYearInFolderName);
         Assert.False(viewModel.IsRunning);
         Assert.True(viewModel.CanEditInputs);
-        Assert.Equal(2, viewModel.ProgressValue);
-        Assert.Equal(2, viewModel.ProgressMaximum);
+        Assert.Equal(2, viewModel.ProcessedFileCount);
+        Assert.Equal(2, viewModel.TotalFileCount);
+        Assert.Equal(100, viewModel.ProgressPercentage);
         Assert.Equal("100%", viewModel.ProgressPercentageText);
-        Assert.Equal("1 copied, 1 skipped, and 0 failed across 1 folder(s).", viewModel.Summary);
-        Assert.Equal("Sorting completed.", viewModel.StatusMessage);
+        Assert.Equal(3, viewModel.ProcessingHistory.Count);
+        Assert.Equal(ProcessingStatus.Sorted, viewModel.ProcessingHistory[0].Status);
+        Assert.Equal(ProcessingStatus.Skipped, viewModel.ProcessingHistory[1].Status);
+        Assert.Equal(ProcessingStatus.Completed, viewModel.ProcessingHistory[2].Status);
+        Assert.Equal(
+            LocalizationFormatter.FormatProcessingSummary(1, 0, 1, 0),
+            viewModel.ProcessingHistory[2].Details);
+        Assert.True(viewModel.HasProcessingHistory);
+        Assert.False(viewModel.HasNoProcessingHistory);
     }
 
     [Fact]
@@ -158,9 +181,56 @@ public sealed class MainWindowViewModelTests
         await viewModel.StartSortingCommand.ExecuteAsync(null);
 
         Assert.True(viewModel.HasValidationMessage);
-        Assert.Contains("missing", viewModel.ValidationMessage, StringComparison.Ordinal);
-        Assert.Equal("The source folder could not be found.", viewModel.StatusMessage);
+        Assert.Equal(Strings.Validation_SourceNotFound, viewModel.ValidationMessage);
         Assert.False(viewModel.IsRunning);
+    }
+
+    [Fact]
+    public async Task StartingANewSortClearsHistoryAndResetsProgress()
+    {
+        int invocation = 0;
+        TaskCompletionSource<SortResult> secondCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource secondStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        SortedFileResult previousFile = new(
+            "previous.jpg",
+            Path.Combine("target", "09-05", "previous.jpg"),
+            new DateTime(2026, 9, 5),
+            SortFileStatus.Copied,
+            "Copied.");
+        StubImageSortService service = new()
+        {
+            Handler = (_, _, _) =>
+            {
+                invocation++;
+                if (invocation == 1)
+                {
+                    return Task.FromResult(new SortResult(1, 1, 0, 0, 1, 1, [previousFile]));
+                }
+
+                secondStarted.SetResult();
+                return secondCompletion.Task;
+            }
+        };
+        MainWindowViewModel viewModel = new(service)
+        {
+            SourceFolder = "source",
+            TargetFolder = "target"
+        };
+
+        await viewModel.StartSortingCommand.ExecuteAsync(null);
+        Assert.Equal(2, viewModel.ProcessingHistory.Count);
+
+        Task sortingTask = viewModel.StartSortingCommand.ExecuteAsync(null);
+        await secondStarted.Task;
+
+        Assert.Empty(viewModel.ProcessingHistory);
+        Assert.Equal(0, viewModel.ProcessedFileCount);
+        Assert.Equal(0, viewModel.TotalFileCount);
+        Assert.Equal(0, viewModel.ProgressPercentage);
+        Assert.True(viewModel.HasNoProcessingHistory);
+
+        secondCompletion.SetResult(new SortResult(0, 0, 0, 0, 0, 0, []));
+        await sortingTask;
     }
 
     private sealed class StubImageSortService : IImageSortService

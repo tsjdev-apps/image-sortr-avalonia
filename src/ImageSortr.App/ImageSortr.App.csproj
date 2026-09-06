@@ -5,6 +5,7 @@
         <RootNamespace>ImageSortr.App</RootNamespace>
         <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <NeutralLanguage>en</NeutralLanguage>
     </PropertyGroup>
 
     <ItemGroup>

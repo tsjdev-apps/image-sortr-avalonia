@@ -34,7 +34,7 @@ public sealed class ImageSortService(
         SortOptions normalizedOptions = ValidateAndNormalizeOptions(options);
         _ = Directory.CreateDirectory(normalizedOptions.TargetFolder);
 
-        progress?.Report(new SortProgress(0, 0, null, "Scanning the source folder for supported image files."));
+        progress?.Report(new SortProgress(0, 0, "Scanning the source folder for supported image files."));
 
         List<string> sourceFiles = [.. Directory
             .EnumerateFiles(normalizedOptions.SourceFolder, "*", SearchOption.TopDirectoryOnly)
@@ -44,7 +44,7 @@ public sealed class ImageSortService(
 
         if (sourceFiles.Count == 0)
         {
-            progress?.Report(new SortProgress(0, 0, null, "No supported image files were found in the source folder."));
+            progress?.Report(new SortProgress(0, 0, "No supported image files were found in the source folder."));
             return new SortResult(0, 0, 0, 0, 0, 0, []);
         }
 
@@ -90,7 +90,8 @@ public sealed class ImageSortService(
                 }
 
                 string destinationFile = Path.Combine(folderResolution.FolderPath, Path.GetFileName(sourceFile));
-                if (File.Exists(destinationFile) && normalizedOptions.ConflictMode == SortConflictMode.Skip)
+                bool destinationExists = File.Exists(destinationFile);
+                if (destinationExists && normalizedOptions.ConflictMode == SortConflictMode.Skip)
                 {
                     skippedFiles++;
                     fileResult = new SortedFileResult(
@@ -109,11 +110,13 @@ public sealed class ImageSortService(
                         cancellationToken);
 
                     copiedFiles++;
+                    bool overwroteExisting = destinationExists
+                        && normalizedOptions.ConflictMode == SortConflictMode.Overwrite;
                     fileResult = new SortedFileResult(
                         sourceFile,
                         destinationFile,
                         imageDate,
-                        SortFileStatus.Copied,
+                        overwroteExisting ? SortFileStatus.Overwritten : SortFileStatus.Copied,
                         imageDate is null
                             ? $"Copied '{Path.GetFileName(sourceFile)}' to 'Unknown Date' because no usable date was found."
                             : $"Copied '{Path.GetFileName(sourceFile)}' to '{Path.GetFileName(folderResolution.FolderPath)}'.");
@@ -138,8 +141,8 @@ public sealed class ImageSortService(
             progress?.Report(new SortProgress(
                 current,
                 sourceFiles.Count,
-                sourceFile,
-                fileResult.Message));
+                fileResult.Message,
+                fileResult));
         }
 
         return new SortResult(

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Main_WindowTitle" xml:space="preserve"><value>Image Sortr by tsjdev apps</value></data>
+  <data name="Main_Title" xml:space="preserve"><value>Image Sortr</value></data>
+  <data name="Main_Description" xml:space="preserve"><value>Bilder anhand des EXIF-Aufnahmedatums in datumsbasierte Ordner sortieren.</value></data>
+  <data name="Theme_Locale" xml:space="preserve"><value>de-DE</value></data>
+  <data name="SourceFolder_Label" xml:space="preserve"><value>Quellordner</value></data>
+  <data name="SourceFolder_Watermark" xml:space="preserve"><value>Wähle den Ordner mit den zu sortierenden Bildern aus</value></data>
+  <data name="SourceFolder_BrowseTooltip" xml:space="preserve"><value>Quellordner auswählen</value></data>
+  <data name="SourceFolder_PickerTitle" xml:space="preserve"><value>Quellordner auswählen</value></data>
+  <data name="TargetFolder_Label" xml:space="preserve"><value>Zielordner</value></data>
+  <data name="TargetFolder_Watermark" xml:space="preserve"><value>Wähle aus, wo die Datumsordner erstellt werden sollen</value></data>
+  <data name="TargetFolder_BrowseTooltip" xml:space="preserve"><value>Zielordner auswählen</value></data>
+  <data name="TargetFolder_PickerTitle" xml:space="preserve"><value>Zielordner auswählen</value></data>
+  <data name="OptionalFolderName_Label" xml:space="preserve"><value>Optionaler Ordnername</value></data>
+  <data name="OptionalFolderName_Watermark" xml:space="preserve"><value>Beispiel: Hamburg, Urlaub, Kreuzfahrt, ...</value></data>
+  <data name="IncludeYear_Label" xml:space="preserve"><value>Jahr in Datumsordner aufnehmen</value></data>
+  <data name="IncludeYear_DescriptionWithYear" xml:space="preserve"><value>Neue Ordner verwenden JJJJ-MM-TT/Ihr Name. Passende vorhandene Datumsordner werden immer wiederverwendet.</value></data>
+  <data name="IncludeYear_DescriptionWithoutYear" xml:space="preserve"><value>Neue Ordner verwenden MM-TT/Ihr Name. Passende vorhandene Datumsordner werden immer wiederverwendet.</value></data>
+  <data name="OverwriteFiles_Label" xml:space="preserve"><value>Vorhandene Dateien im Zielordner überschreiben</value></data>
+  <data name="OverwriteFiles_Description" xml:space="preserve"><value>Ist diese Option deaktiviert, werden Konflikte übersprungen und vorhandene Dateien im Zielordner beibehalten.</value></data>
+  <data name="SortImages_Button" xml:space="preserve"><value>Bilder sortieren</value></data>
+  <data name="SortingImages_Button" xml:space="preserve"><value>Bilder werden sortiert...</value></data>
+  <data name="Progress_Title" xml:space="preserve"><value>Fortschritt</value></data>
+  <data name="Progress_ProcessedFile" xml:space="preserve"><value>{0} / {1} Datei verarbeitet</value></data>
+  <data name="Progress_ProcessedFiles" xml:space="preserve"><value>{0} / {1} Dateien verarbeitet</value></data>
+  <data name="Progress_NoFiles" xml:space="preserve"><value>Es wurden noch keine Dateien verarbeitet.</value></data>
+  <data name="ProcessingHistory_Title" xml:space="preserve"><value>Verarbeitungsverlauf</value></data>
+  <data name="ProcessingStatus_Sorted" xml:space="preserve"><value>Sortiert</value></data>
+  <data name="ProcessingStatus_Skipped" xml:space="preserve"><value>Übersprungen</value></data>
+  <data name="ProcessingStatus_Overwritten" xml:space="preserve"><value>Überschrieben</value></data>
+  <data name="ProcessingStatus_Failed" xml:space="preserve"><value>Fehlgeschlagen</value></data>
+  <data name="ProcessingStatus_Completed" xml:space="preserve"><value>Abgeschlossen</value></data>
+  <data name="ProcessingSummary_Title" xml:space="preserve"><value>Zusammenfassung</value></data>
+  <data name="ProcessingSummary_Counts" xml:space="preserve"><value>{0} sortiert · {1} überschrieben · {2} übersprungen · {3} fehlgeschlagen</value></data>
+  <data name="ProcessingDetail_FileExists" xml:space="preserve"><value>Datei ist bereits vorhanden</value></data>
+  <data name="ProcessingDetail_CouldNotProcess" xml:space="preserve"><value>Die Datei konnte nicht verarbeitet werden</value></data>
+  <data name="Validation_InvalidFolders" xml:space="preserve"><value>Bitte überprüfe die ausgewählten Ordner und versuche es erneut.</value></data>
+  <data name="Validation_SourceNotFound" xml:space="preserve"><value>Der Quellordner wurde nicht gefunden.</value></data>
+  <data name="Validation_TargetUnavailable" xml:space="preserve"><value>Der Zielordner konnte nicht erstellt oder geöffnet werden.</value></data>
+  <data name="Validation_AccessDenied" xml:space="preserve"><value>Die App hat keine Berechtigung für einen der ausgewählten Ordner.</value></data>
+</root>

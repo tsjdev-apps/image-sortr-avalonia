@@ -126,6 +126,7 @@ public sealed class ImageSortServiceTests
 
         Assert.Equal(1, result.CopiedFiles);
         Assert.Equal(0, result.SkippedFiles);
+        Assert.Equal(SortFileStatus.Overwritten, Assert.Single(result.Files).Status);
         Assert.Equal("fresh content", await File.ReadAllTextAsync(
             Path.Combine(workspace.TargetFolder, "2026-06-20", "camera.jpg"),
             TestContext.Current.CancellationToken));
@@ -184,7 +185,10 @@ public sealed class ImageSortServiceTests
 
         Assert.Equal(2, result.TotalFiles);
         Assert.Contains(progress.Updates, update => update.Message.Contains("Scanning", StringComparison.Ordinal));
-        Assert.Equal(2, progress.Updates.Count(update => update.CurrentFile is not null));
+        Assert.Equal(2, progress.Updates.Count(update => update.FileResult is not null));
+        Assert.All(
+            progress.Updates.Where(update => update.FileResult is not null),
+            update => Assert.NotNull(update.FileResult));
         Assert.Equal(2, progress.Updates.Last().Current);
         Assert.Equal(2, progress.Updates.Last().Total);
     }
