@@ -8,6 +8,9 @@ public enum SortFileStatus
     /// <summary>The file was copied to its resolved date folder.</summary>
     Copied,
 
+    /// <summary>The file replaced an existing destination file.</summary>
+    Overwritten,
+
     /// <summary>The file was skipped because a destination file already existed.</summary>
     Skipped,
 

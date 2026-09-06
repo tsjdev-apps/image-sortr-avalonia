@@ -1,13 +1,16 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ImageSortr.App.Models;
+using ImageSortr.App.Resources.Localization;
 using ImageSortr.Core.Models;
 using ImageSortr.Core.Services;
 
 namespace ImageSortr.App.ViewModels;
 
 /// <summary>
-/// Coordinates the main Image Sortr setup, progress, and summary experience.
+/// Coordinates the main Image Sortr setup and processing-history experience.
 /// </summary>
 public sealed partial class MainWindowViewModel(
     IImageSortService imageSortService) : ObservableObject
@@ -43,34 +46,33 @@ public sealed partial class MainWindowViewModel(
     [NotifyPropertyChangedFor(nameof(IsOverwriteExisting))]
     public partial SortConflictMode SelectedConflictMode { get; set; } = SortConflictMode.Skip;
 
-    /// <summary>Gets or sets the current number of files that have been processed.</summary>
+    /// <summary>Gets or sets the number of files processed in the current batch.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProgressSummary))]
+    [NotifyPropertyChangedFor(nameof(ProgressPercentage))]
     [NotifyPropertyChangedFor(nameof(ProgressPercentageText))]
-    public partial int ProgressValue { get; set; }
+    public partial int ProcessedFileCount { get; set; }
 
-    /// <summary>Gets or sets the total number of files expected in the current batch.</summary>
+    /// <summary>Gets or sets the total number of files in the current batch.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProgressSummary))]
+    [NotifyPropertyChangedFor(nameof(ProgressPercentage))]
     [NotifyPropertyChangedFor(nameof(ProgressPercentageText))]
-    public partial int ProgressMaximum { get; set; } = 1;
-
-    /// <summary>Gets or sets the main status message shown to the user.</summary>
-    [ObservableProperty]
-    public partial string StatusMessage { get; set; } = "Choose your folders and start sorting when you are ready.";
-
-    /// <summary>Gets or sets the source file currently being handled.</summary>
-    [ObservableProperty]
-    public partial string CurrentFile { get; set; } = "No files have been processed yet.";
-
-    /// <summary>Gets or sets the completion summary for the latest batch.</summary>
-    [ObservableProperty]
-    public partial string Summary { get; set; } = "No sorting batch has been completed yet.";
+    [NotifyPropertyChangedFor(nameof(ProgressBarMaximum))]
+    public partial int TotalFileCount { get; set; }
 
     /// <summary>Gets or sets a validation message for a batch that could not start.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasValidationMessage))]
     public partial string ValidationMessage { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets whether processing-history entries are available.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNoProcessingHistory))]
+    public partial bool HasProcessingHistory { get; private set; }
+
+    /// <summary>Gets the entries produced by the current sorting operation.</summary>
+    public ObservableCollection<ProcessingEntry> ProcessingHistory { get; } = [];
 
     /// <summary>Gets whether setup inputs can be edited.</summary>
     public bool CanEditInputs => !IsRunning;
@@ -78,10 +80,13 @@ public sealed partial class MainWindowViewModel(
     /// <summary>Gets whether a validation message is available for display.</summary>
     public bool HasValidationMessage => !string.IsNullOrWhiteSpace(ValidationMessage);
 
+    /// <summary>Gets whether the processing history is empty.</summary>
+    public bool HasNoProcessingHistory => !HasProcessingHistory;
+
     /// <summary>Gets the folder-name example appropriate for the selected year option.</summary>
     public string FolderNameHint => IncludeYearInFolderName
-        ? "New folders use YYYY-MM-DD/Your Name. Matching existing date folders are always reused."
-        : "New folders use MM-DD/Your Name. Matching existing date folders are always reused.";
+        ? Strings.IncludeYear_DescriptionWithYear
+        : Strings.IncludeYear_DescriptionWithoutYear;
 
     /// <summary>Gets whether conflict mode is set to overwrite existing files.</summary>
     public bool IsOverwriteExisting
@@ -90,16 +95,30 @@ public sealed partial class MainWindowViewModel(
         set => SelectedConflictMode = value ? SortConflictMode.Overwrite : SortConflictMode.Skip;
     }
 
-    /// <summary>Gets the live progress as a friendly file count.</summary>
-    public string ProgressSummary => $"{ProgressValue} / {ProgressMaximum} files processed";
+    /// <summary>Gets the localized live progress count.</summary>
+    public string ProgressSummary => LocalizationFormatter.FormatProgress(
+        ProcessedFileCount,
+        TotalFileCount);
 
-    /// <summary>Gets the live progress as a percentage.</summary>
-    public string ProgressPercentageText => ProgressMaximum <= 0
-        ? "0%"
-        : $"{Math.Round((double)ProgressValue / ProgressMaximum * 100, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}%";
+    /// <summary>Gets the live progress percentage.</summary>
+    public double ProgressPercentage => TotalFileCount <= 0
+        ? 0
+        : Math.Round(
+            (double)ProcessedFileCount / TotalFileCount * 100,
+            MidpointRounding.AwayFromZero);
+
+    /// <summary>Gets a non-zero maximum suitable for the progress bar.</summary>
+    public int ProgressBarMaximum => Math.Max(1, TotalFileCount);
+
+    /// <summary>Gets the localized live progress as a percentage.</summary>
+    public string ProgressPercentageText => string.Create(
+        CultureInfo.CurrentCulture,
+        $"{ProgressPercentage:0}%");
 
     /// <summary>Gets text appropriate for the current start button state.</summary>
-    public string StartButtonText => IsRunning ? "Sorting images..." : "Sort images";
+    public string StartButtonText => IsRunning
+        ? Strings.SortingImages_Button
+        : Strings.SortImages_Button;
 
     /// <summary>Gets or sets the UI-supplied source-folder picker.</summary>
     public Func<Task<string?>>? BrowseSourceFolderDelegate { get; set; }
@@ -132,14 +151,12 @@ public sealed partial class MainWindowViewModel(
     [RelayCommand(AllowConcurrentExecutions = false, CanExecute = nameof(CanStart))]
     private async Task StartSortingAsync()
     {
+        ResetProgress();
         ValidationMessage = string.Empty;
         IsRunning = true;
-        ProgressValue = 0;
-        ProgressMaximum = 1;
-        StatusMessage = "Preparing the sorting batch.";
-        CurrentFile = "Scanning the selected source folder for supported images.";
-        Summary = "Validating your folders and sorting options.";
+
         object progressLock = new();
+        HashSet<string> displayedFiles = new(StringComparer.Ordinal);
         bool acceptsProgressUpdates = true;
 
         Progress<SortProgress> progress = new(update =>
@@ -151,11 +168,14 @@ public sealed partial class MainWindowViewModel(
                     return;
                 }
 
-                ProgressMaximum = Math.Max(1, update.Total);
-                ProgressValue = Math.Min(update.Current, ProgressMaximum);
-                CurrentFile = update.CurrentFile is null
-                    ? update.Message
-                    : $"{Path.GetFileName(update.CurrentFile)} — {update.Message}";
+                TotalFileCount = Math.Max(0, update.Total);
+                ProcessedFileCount = Math.Clamp(update.Current, 0, TotalFileCount);
+
+                if (update.FileResult is not null
+                    && displayedFiles.Add(update.FileResult.SourceFile))
+                {
+                    AddProcessingEntry(update.FileResult);
+                }
             }
         });
 
@@ -174,31 +194,35 @@ public sealed partial class MainWindowViewModel(
             lock (progressLock)
             {
                 acceptsProgressUpdates = false;
-                ProgressMaximum = Math.Max(1, result.TotalFiles);
-                ProgressValue = result.TotalFiles;
-            }
+                TotalFileCount = result.TotalFiles;
+                ProcessedFileCount = result.TotalFiles;
 
-            Summary = CreateSummary(result);
-            StatusMessage = result.TotalFiles == 0
-                ? "The source folder did not contain any supported image files."
-                : "Sorting completed.";
-            CurrentFile = Summary;
+                foreach (SortedFileResult fileResult in result.Files)
+                {
+                    if (displayedFiles.Add(fileResult.SourceFile))
+                    {
+                        AddProcessingEntry(fileResult);
+                    }
+                }
+
+                AddProcessingSummary(result);
+            }
         }
-        catch (ArgumentException exception)
+        catch (ArgumentException)
         {
-            HandleExpectedFailure("Please review the selected folders and try again.", exception.Message);
+            HandleExpectedFailure(Strings.Validation_InvalidFolders);
         }
-        catch (DirectoryNotFoundException exception)
+        catch (DirectoryNotFoundException)
         {
-            HandleExpectedFailure("The source folder could not be found.", exception.Message);
+            HandleExpectedFailure(Strings.Validation_SourceNotFound);
         }
-        catch (IOException exception)
+        catch (IOException)
         {
-            HandleExpectedFailure("The target folder could not be created or accessed.", exception.Message);
+            HandleExpectedFailure(Strings.Validation_TargetUnavailable);
         }
-        catch (UnauthorizedAccessException exception)
+        catch (UnauthorizedAccessException)
         {
-            HandleExpectedFailure("The app does not have permission to access one of the selected folders.", exception.Message);
+            HandleExpectedFailure(Strings.Validation_AccessDenied);
         }
         finally
         {
@@ -218,24 +242,78 @@ public sealed partial class MainWindowViewModel(
             && !string.IsNullOrWhiteSpace(TargetFolder);
     }
 
-    private static string CreateSummary(SortResult result)
+    private void ResetProgress()
     {
-        if (result.TotalFiles == 0)
-        {
-            return "Nothing was copied because no supported images were found.";
-        }
-
-        return $"{result.CopiedFiles.ToString(CultureInfo.CurrentCulture)} copied, " +
-            $"{result.SkippedFiles.ToString(CultureInfo.CurrentCulture)} skipped, and " +
-            $"{result.FailedFiles.ToString(CultureInfo.CurrentCulture)} failed across " +
-            $"{result.FoldersUsed.ToString(CultureInfo.CurrentCulture)} folder(s).";
+        ProcessingHistory.Clear();
+        HasProcessingHistory = false;
+        ProcessedFileCount = 0;
+        TotalFileCount = 0;
     }
 
-    private void HandleExpectedFailure(string status, string details)
+    private void AddProcessingEntry(SortedFileResult fileResult)
     {
-        StatusMessage = status;
-        Summary = "The sorting batch could not be started.";
-        CurrentFile = details;
-        ValidationMessage = details;
+        ProcessingStatus status = fileResult.Status switch
+        {
+            SortFileStatus.Copied => ProcessingStatus.Sorted,
+            SortFileStatus.Skipped => ProcessingStatus.Skipped,
+            SortFileStatus.Overwritten => ProcessingStatus.Overwritten,
+            SortFileStatus.Failed => ProcessingStatus.Failed,
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(fileResult),
+                fileResult.Status,
+                "Unsupported processing status.")
+        };
+
+        string? destination = GetRelativeDestination(fileResult.DestinationFile);
+        string? details = status switch
+        {
+            ProcessingStatus.Skipped => Strings.ProcessingDetail_FileExists,
+            ProcessingStatus.Failed => Strings.ProcessingDetail_CouldNotProcess,
+            _ => null
+        };
+
+        ProcessingHistory.Add(new ProcessingEntry(
+            Path.GetFileName(fileResult.SourceFile),
+            status,
+            destination,
+            details));
+        HasProcessingHistory = true;
+    }
+
+    private string? GetRelativeDestination(string? destinationFile)
+    {
+        string? destinationFolder = Path.GetDirectoryName(destinationFile);
+        if (string.IsNullOrWhiteSpace(destinationFolder))
+        {
+            return null;
+        }
+
+        string relativePath = Path.GetRelativePath(TargetFolder, destinationFolder);
+        return relativePath == "."
+            ? Path.GetFileName(destinationFolder)
+            : relativePath;
+    }
+
+    private void AddProcessingSummary(SortResult result)
+    {
+        int overwrittenFiles = result.Files.Count(
+            file => file.Status == SortFileStatus.Overwritten);
+        int sortedFiles = Math.Max(0, result.CopiedFiles - overwrittenFiles);
+        string summary = LocalizationFormatter.FormatProcessingSummary(
+            sortedFiles,
+            overwrittenFiles,
+            result.SkippedFiles,
+            result.FailedFiles);
+
+        ProcessingHistory.Add(new ProcessingEntry(
+            Strings.ProcessingSummary_Title,
+            ProcessingStatus.Completed,
+            details: summary));
+        HasProcessingHistory = true;
+    }
+
+    private void HandleExpectedFailure(string message)
+    {
+        ValidationMessage = message;
     }
 }
